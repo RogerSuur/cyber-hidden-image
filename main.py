@@ -7,18 +7,16 @@ args = sys.argv
 
 def map():
     img = Image.open("./resources/image.jpeg")
-
     exif_data = get_exif_data(img)
 
     latitude, longitude = get_lat_lon(exif_data)
 
-    print (latitude, longitude)
+    print ("Lat/Lon:	",latitude, longitude)
 
 def get_exif_data(img):
     exif_data = {}
     info = img._getexif()
     if info:
-        print(info.items())
         for tag, value in info.items():
             decoded = TAGS.get(tag, tag)
             if decoded == "GPSInfo":
@@ -45,7 +43,6 @@ def convert_to_degress(value):
     return d + (m / 60.0) + (s / 3600.0)
 
 def get_lat_lon(exif_data):
-    print(exif_data)
     lat = None
     lon = None
 
@@ -68,10 +65,30 @@ def get_lat_lon(exif_data):
 
     return lat, lon
 
+def steg():
+    start_marker = b"-----BEGIN PGP PUBLIC KEY BLOCK-----"
+    end_marker = b"-----END PGP PUBLIC KEY BLOCK-----"
+
+    with open("./resources/image.jpeg", "rb") as file:
+        file_content = file.read()
+        start_index = file_content.find(start_marker)
+        end_index = file_content.find(end_marker, start_index) + len(end_marker)
+    
+    if start_index != -1 and end_index != -1:
+            return file_content[start_index:end_index].decode('ascii')
+    else:
+            return "PGP public key block not found in file."
+
+
 def parse_args(args):
     if "--help" in args:
         if args[0] == '--help':
-            help()
+            print("Welcome to inspector-image\n"
+                  "\n"
+          "OPTIONS:\n"
+          " ./image -map image.jpeg  :     Finds location where this picture was taken\n"
+          " ./image -steg image.jpeg :     Finds PGP public key from the image data\n")
+
     elif "-map" in args:
         name_index = args.index("-map") + 1
         if name_index < len(args):
@@ -79,19 +96,13 @@ def parse_args(args):
         else:
             print("./image -map image.jpeg")
     elif "-steg" in args:
-        ip_index = args.index("-ip") + 1
-        if ip_index < len(args):
-            search_by_ip(args[ip_index])
+        steg_index = args.index("-steg") + 1
+        if steg_index < len(args):
+                secret_data = steg()
+                print(secret_data)
         else:
-            print("IP address not provided")
+            print("./image -steg image.jpeg")
     else:
-        print("Unknown command. Use '--help' for guidelines.")
+        print("Unknown command. Use './image --help' for guidelines.")
 
 parse_args(sys.argv[1:])
-
-def help():
-    print("Welcome to inspector-image\n"
-          "OPTIONS:\n"
-          " ./image -map   Search by full name like 'python3 passive.py -fn \"Jean Dupont\"'\n"
-          "        -ip :     Search with IP address, like 'python3 passive.py -ip 127.0.0.1'\n")
-
