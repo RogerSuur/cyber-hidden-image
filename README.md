@@ -1,6 +1,6 @@
 ## General
 
-This is tool that finds the pgp key and location from this image
+This is tool that finds the pgp key and location from this image data
 
 ## Commands
 
